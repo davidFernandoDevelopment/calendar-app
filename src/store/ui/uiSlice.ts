@@ -1,7 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// import { Note } from './';
-
 
 interface UIState {
     isDateModalOpen: boolean;

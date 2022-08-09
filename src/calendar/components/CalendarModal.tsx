@@ -1,13 +1,17 @@
 import Modal from 'react-modal';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
-import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
-
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { addHours, differenceInSeconds } from 'date-fns';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { useUIStore } from '../../hooks';
+
 import es from 'date-fns/locale/es';
+import { useCalendarStore } from '../../hooks/useCalendarStore';
+import { EventCalendar } from '../interfaces';
 registerLocale('es', es);
+
 
 const customStyles = {
     content: {
@@ -25,14 +29,20 @@ Modal.setAppElement('#root');
 
 
 export const CalendarModal = () => {
-    const [isOpen, setIsOpen] = useState(true);
     const [formSubmitted, setFormSubmitted] = useState(false);
-    const [formValues, setFormValues] = useState({
+    const [formValues, setFormValues] = useState<EventCalendar>({
         title: 'David',
         notes: 'Sanchez',
         start: new Date(),
-        end: addHours(new Date(), 2)
+        end: addHours(new Date(), 2),
+        user: {
+            name: 'David',
+            _id: '124'
+        }
     });
+    const { isDateModalOpen, closeDateModal } = useUIStore();
+    const { activeEvent, startSavingEvent, setActiveEvent } = useCalendarStore();
+
     const titleClasses = useMemo(() => {
         if (!formSubmitted) return '';
 
@@ -41,10 +51,11 @@ export const CalendarModal = () => {
             : 'is-invalid';
     }, [formValues.title, formSubmitted]);
 
-    const onCloseModal = () => {
-        console.log('Cerrando modal');
-        setIsOpen(false);
-    };
+    useEffect(() => {
+        if (activeEvent) {
+            setFormValues({ ...activeEvent });
+        }
+    }, [activeEvent]);
 
     const onInputChanged = ({
         target: { name, value }
@@ -54,6 +65,7 @@ export const CalendarModal = () => {
             [name]: value
         });
     };
+
     const onDateChanged = (e: Date | null, changing: 'start' | 'end') => {
         if (!e) return;
         setFormValues({
@@ -62,7 +74,7 @@ export const CalendarModal = () => {
         });
     };
 
-    const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setFormSubmitted(true);
 
@@ -76,14 +88,22 @@ export const CalendarModal = () => {
             return;
         }
 
+        await startSavingEvent(formValues);
+        closeDateModal();
+        setFormSubmitted(false);
+    };
+
+    const onClose = () => {
+        closeDateModal();
+        setActiveEvent(null);
     };
 
     return (
         <Modal
-            isOpen={isOpen}
+            isOpen={isDateModalOpen}
             style={customStyles}
             contentLabel="Example Modal"
-            onRequestClose={onCloseModal}
+            onRequestClose={onClose}
             className='modal'
             closeTimeoutMS={200}
             overlayClassName='modal-fondo'
