@@ -1,15 +1,16 @@
 import { Route, Routes } from 'react-router-dom';
 
+import { Status } from '../store';
 import { LoginPage } from '../auth';
 import { CalendarPage } from '../calendar';
 
 export const AppRouter = () => {
-    const status: any = 'not-authenticated';
+    const status: Status = 'checking';
 
     return (
         <Routes>
             {
-                status === "authenticated"
+                status === "checking"
                     ? <Route path="auth/*" element={<LoginPage />} />
                     : <Route path="/*" element={<CalendarPage />} />
             }
