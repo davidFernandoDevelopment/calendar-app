@@ -5,14 +5,14 @@ import { User } from '../../auth';
 export type Status = 'authenticated' | 'not-authneticated' | 'checking';
 interface AuthState {
 	status: Status;
-	user: User;
-	errorMessage?: string;
+	user: Partial<User> | null;
+	errorMessage: string | null;
 }
 
 const initialState: AuthState = {
 	status: 'checking',
-	user: {},
-	errorMessage: undefined,
+	user: null,
+	errorMessage: null,
 };
 
 export const authSlice = createSlice({
@@ -21,17 +21,26 @@ export const authSlice = createSlice({
 	reducers: {
 		onChecking: (state: AuthState) => {
 			state.status = 'checking';
-			state.user = {};
-			state.errorMessage = undefined;
+			state.user = null;
+			state.errorMessage = null;
 		},
-		onLogin: (state: AuthState, action: PayloadAction<User>) => {
+		onLogin: (state: AuthState, action: PayloadAction<Partial<User>>) => {
 			state.status = 'authenticated';
 			state.user = action.payload;
-			state.errorMessage = undefined;
+			state.errorMessage = null;
+		},
+		onLogout: (state: AuthState, action: PayloadAction<string | undefined>) => {
+			state.status = 'not-authneticated';
+			state.user = null;
+			if (action.payload) state.errorMessage = action.payload;
+		},
+		clearMessageError: (state: AuthState) => {
+			state.errorMessage = null;
 		},
 	},
 });
 
-export const { onChecking, onLogin } = authSlice.actions;
+export const { onChecking, onLogin, onLogout, clearMessageError } =
+	authSlice.actions;
 
 export default authSlice.reducer;
