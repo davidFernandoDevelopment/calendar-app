@@ -1,8 +1,8 @@
-export interface EventCalendar {
+export interface EventCalendarResponse {
 	id?: string | number;
 	title: string;
-	start: Date;
-	end: Date;
+	start: string;
+	end: string;
 	notes: string;
 	bgColor?: string;
 	user: {
