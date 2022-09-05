@@ -87,7 +87,7 @@ export const CalendarModal = () => {
             Swal.fire('Rellenar titulo', 'El titulo es obligatorio', 'error');
             return;
         }
-
+        console.log({ formValues });
         await startSavingEvent(formValues);
         closeDateModal();
         setFormSubmitted(false);

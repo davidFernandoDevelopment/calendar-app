@@ -10,6 +10,11 @@ export const Navbar = () => {
                 &nbsp;
                 {user?.name}
             </span>
+            {
+                navigator.onLine
+                    ? <span className='text-success'>Online</span>
+                    : <span className='text-danger'>Online</span>
+            }
             <button
                 className='btn btn-outline-danger'
                 onClick={startLogout}

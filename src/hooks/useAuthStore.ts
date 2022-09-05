@@ -78,9 +78,9 @@ export const useAuthStore = () => {
 				})
 			);
 		} catch (err: any) {
-			console.log(err);
-			localStorage.clear();
-			dispatch(onLogout());
+			// console.log(err);
+			// localStorage.clear();
+			// dispatch(onLogout());
 		}
 	};
 

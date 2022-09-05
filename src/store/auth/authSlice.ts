@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { User } from '../../auth';
 
-export type Status = 'authenticated' | 'not-authneticated' | 'checking';
+export type Status = 'authenticated' | 'not-authenticated' | 'checking';
 interface AuthState {
 	status: Status;
 	user: Partial<User> | null;
@@ -30,7 +30,7 @@ export const authSlice = createSlice({
 			state.errorMessage = null;
 		},
 		onLogout: (state: AuthState, action: PayloadAction<string | undefined>) => {
-			state.status = 'not-authneticated';
+			state.status = 'not-authenticated';
 			state.user = null;
 			if (action.payload) state.errorMessage = action.payload;
 		},
