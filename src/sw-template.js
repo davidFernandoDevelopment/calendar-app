@@ -10,7 +10,7 @@ const {
     NetworkFirst,
 } = workbox.strategies;
 const { registerRoute } = workbox.routing;
-const { BackgroundSyncPlugin } = workbox.backgroundSync;
+const { BackgroundSyncPlugin, Queue } = workbox.backgroundSync;
 
 //* App_shell
 const cacheFirst = [
@@ -41,26 +41,23 @@ registerRoute(
 );
 
 //* Posteos offlines
+const queue = new Queue('put-offline');
 const bgSyncPlugin = new BackgroundSyncPlugin('posteos-offline', {
-    maxRetentionTime: 24 * 60,
-    onSync: async ({ queue }) => {
-        console.log('POSTS', queue);
-    }
+    maxRetentionTime: 24 * 60
 });
-
-const statusPlugin = {
-    fetchDidSucceed: ({ response }) => {
-        if (response.status === 404) {
-            //* TODO: Analizar si existe un event en indexedDB.
-            console.log('response dese fetchDidSucceed: ', response);
-        }
-        return response;
-    }
-};
+const myPlugin = {
+    fetchDidFail: async ({ originalRequest, request, error, event, state }) => {
+        console.log({ request });
+    },
+    fetchDidSucceed: async ({ originalRequest, request, error, event, state }) => {
+        console.log({ response });
+    },
+}
 
 registerRoute(
     new RegExp('https://calendar-app-ts.herokuapp.com/api/events'),
     new NetworkOnly({
+        cacheName: 'post',
         plugins: [bgSyncPlugin]
     }),
     'POST'
@@ -68,7 +65,8 @@ registerRoute(
 registerRoute(
     new RegExp('https://calendar-app-ts.herokuapp.com/api/events'),
     new NetworkOnly({
-        plugins: [bgSyncPlugin]
+        cacheName: 'put',
+        plugins: [myPlugin, bgSyncPlugin]
     }),
     'PUT'
 )
@@ -78,4 +76,4 @@ registerRoute(
         plugins: [bgSyncPlugin]
     }),
     'DELETE'
-)
+);
