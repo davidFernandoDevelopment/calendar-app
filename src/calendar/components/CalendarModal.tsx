@@ -10,6 +10,7 @@ import { useUIStore } from '../../hooks';
 import es from 'date-fns/locale/es';
 import { useCalendarStore } from '../../hooks/useCalendarStore';
 import { EventCalendar } from '../interfaces';
+import { useAuthStore } from '../../hooks/useAuthStore';
 registerLocale('es', es);
 
 
@@ -29,15 +30,16 @@ Modal.setAppElement('#root');
 
 
 export const CalendarModal = () => {
+    const { user } = useAuthStore();
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [formValues, setFormValues] = useState<EventCalendar>({
-        title: 'David',
-        notes: 'Sanchez',
+        title: '',
+        notes: '',
         start: new Date(),
         end: addHours(new Date(), 2),
         user: {
-            name: 'David',
-            _id: '124'
+            name: user?.name!,
+            _id: user?.uid!,
         }
     });
     const { isDateModalOpen, closeDateModal } = useUIStore();

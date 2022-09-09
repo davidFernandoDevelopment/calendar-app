@@ -1,5 +1,3 @@
-import { ObjectID } from 'bson';
-
 import { db } from './db';
 import { EventCalendar } from '../calendar';
 
@@ -12,12 +10,14 @@ export const getEventDataLocally = () => {
 	return db.events.toArray();
 };
 
-export const addEventDataLocally = (event: EventCalendar) => {
-	const id = new ObjectID();
+export const getOneEventDataLocally = (id: string | number) => {
+	return db.events.get(id);
+};
 
+export const addEventDataLocally = (event: EventCalendar) => {
 	return db.events.add({
 		...event,
-		id: event.id || id.toString(),
+		id: event.id,
 	});
 };
 
@@ -26,4 +26,8 @@ export const updateEventDataLocally = (
 	event: EventCalendar
 ) => {
 	return db.events.update(id, event);
+};
+
+export const deleteEventDataLocally = (id: string | number) => {
+	return db.events.delete(id);
 };

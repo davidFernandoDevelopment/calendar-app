@@ -12,12 +12,7 @@ import { EventCalendar } from '../calendar';
 import { convertDateEvents } from '../helper';
 import Swal from 'sweetalert2';
 
-import {
-	addEventDataLocally,
-	getEventDataLocally,
-	saveEventDataLocally,
-	updateEventDataLocally,
-} from '../dexieDB/event';
+import { ObjectId } from 'bson';
 
 export const useCalendarStore = () => {
 	const dispatch = useAppDispatch();
@@ -29,33 +24,32 @@ export const useCalendarStore = () => {
 	};
 
 	const startSavingEvent = async (calendarEvent: EventCalendar) => {
-		const data = { ...calendarEvent };
-		console.log({ data, calendarEvent });
 		try {
 			if (calendarEvent.id) {
-				await calendarApi.put(`events/${calendarEvent.id}`, calendarEvent);
-				await updateEventDataLocally(calendarEvent.id, data);
+				const { data } = await calendarApi.put(
+					`events/${calendarEvent.id}`,
+					calendarEvent
+				);
 				dispatch(
 					onUpdateEvent({
 						...calendarEvent,
 						user: {
-							name: user?.name!,
 							_id: user?.uid!,
+							name: user?.name!,
 						},
 					})
 				);
 				return;
 			}
-			const {
-				data: {
-					evento: { id },
-				},
-			} = await calendarApi.post('events', calendarEvent);
-			// await addEventDataLocally({ ...data, id });
+			const id_new = new ObjectId().toString(); //* OBJECT_ID PARA MONGO
+			const { data } = await calendarApi.post('events', {
+				...calendarEvent,
+				id: id_new,
+			});
 			dispatch(
 				onAddNewEvent({
 					...calendarEvent,
-					id,
+					id: id_new,
 					user: {
 						_id: user?.uid!,
 						name: user?.name!,
@@ -63,31 +57,6 @@ export const useCalendarStore = () => {
 				})
 			);
 		} catch (err: any) {
-			if (calendarEvent.id) {
-				await updateEventDataLocally(calendarEvent.id, data);
-				dispatch(
-					onUpdateEvent({
-						...calendarEvent,
-						user: {
-							name: user?.name!,
-							_id: user?.uid!,
-						},
-					})
-				);
-			} else {
-				const id = await addEventDataLocally(data);
-				dispatch(
-					onAddNewEvent({
-						...calendarEvent,
-						id: id.toString(),
-						user: {
-							_id: user?.uid!,
-							name: user?.name!,
-						},
-					})
-				);
-			}
-			// Swal.fire('Error al guardar', err, 'error');
 			console.log(err);
 		}
 	};
@@ -108,16 +77,9 @@ export const useCalendarStore = () => {
 			} = await calendarApi.get('events');
 
 			const events = convertDateEvents(eventos);
-			//* EN CADA CARGA ACTUALIZO EL INDEXED-DB.
-			await saveEventDataLocally(events);
-
 			dispatch(onLoadEvents(events));
 		} catch (err) {
-			//* SI NO HAY CONEXIÓN CONSULTO CON EL INDEXED-DB.
-			const events = await getEventDataLocally();
-			console.log({ events });
-
-			dispatch(onLoadEvents(events));
+			console.log(err);
 		}
 	};
 
